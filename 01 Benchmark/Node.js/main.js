@@ -1,6 +1,10 @@
 const { Worker, isMainThread } = require('node:worker_threads');
 if (isMainThread) {
-    for (let i = 0; i < 100; i++) new Worker(__filename);
+    var args = process.argv.slice(2);
+    const numThreads = args[0] || 1;
+
+    console.log(`Starting ${numThreads} Threads in Node.js!`);
+    for (let i = 0; i < numThreads; i++) new Worker(__filename);
 } else {
     fibonacci(1000);
 }
