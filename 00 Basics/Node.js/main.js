@@ -1,7 +1,12 @@
-const { Worker, isMainThread, workerData } = require('node:worker_threads}');
+const { Worker, isMainThread, workerData } = require('node:worker_threads');
+const { parentPort } = require('worker_threads');
 if (isMainThread) {
-    /* This is the main thread */
-    new Worker(__filename, { workerData: 'Hello from the Worker Thread!' });
+    const worker = new Worker(__filename, {
+        workerData: 'Hello from the Worker Thread!',
+    });
+    worker.on('message', (message) => {
+        console.log(message);
+    });
 } else {
-    console.log(workerData);
+    parentPort.postMessage(workerData);
 }
