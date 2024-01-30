@@ -6,16 +6,14 @@ commands=("node Node.js/main.js" "bun run Bun/main.js" "deno run Deno/main.js")
 repetitions=10
 
 mkdir -p results
-> results/averages.csv
 
 for cmd in "${commands[@]}"; do
     runtime=$(echo $cmd | cut -d' ' -f1)
     echo "Benchmarking: $runtime"
 
     > results/$runtime.csv
-
-    echo $runtime >> results/averages.csv
-    echo threads,real,user+sys,max_rss >> results/averages.csv
+    > results/averages_$runtime.csv
+    echo "threads,real (s),user+sys (s),max_rss (kb)" >> results/averages_$runtime.csv
 
     for threads in "${threads[@]}"; do
         echo "Threads: $threads"
@@ -33,7 +31,7 @@ for cmd in "${commands[@]}"; do
             max_rss=$(echo "$output" | grep 'Maximum resident set size' | cut -d':' -f2)
             cpu_time=$(echo "$system_time + $user_time" | bc)
 
-            row="$i,${elapsed_time}s,${cpu_time}s,${max_rss## }kb"
+            row="$i,${elapsed_time},${cpu_time},${max_rss## }"
             matrix+=($row)
             echo $row >> results/$runtime.csv
         done
@@ -45,9 +43,9 @@ for cmd in "${commands[@]}"; do
         count=${#matrix[@]}
 
         for result in "${matrix[@]}"; do
-            elapsed_time=$(echo "$result" | cut -d',' -f2 | sed 's/s//')
-            cpu_time=$(echo "$result" | cut -d',' -f3 | sed 's/s//')
-            max_rss=$(echo "$result" | cut -d',' -f4 | sed 's/kb//')
+            elapsed_time=$(echo "$result" | cut -d',' -f2)
+            cpu_time=$(echo "$result" | cut -d',' -f3)
+            max_rss=$(echo "$result" | cut -d',' -f4)
 
             avg_elapsed_time=$(echo "$avg_elapsed_time + $elapsed_time" | bc)
             avg_cpu_time=$(echo "$avg_cpu_time + $cpu_time" | bc)
@@ -59,16 +57,16 @@ for cmd in "${commands[@]}"; do
         avg_max_rss=$(echo "scale=2; $avg_max_rss / $count" | bc)
         
         # Add averages to matrix
-        avg_row="Average,${avg_elapsed_time}s,${avg_cpu_time}s,${avg_max_rss}kb"
+        avg_row="Average,${avg_elapsed_time},${avg_cpu_time},${avg_max_rss}"
         matrix+=($avg_row)
         echo $avg_row >> results/$runtime.csv
-        echo "$threads,${avg_elapsed_time}s,${avg_cpu_time}s,${avg_max_rss}kb" >> results/averages.csv
+        echo "$threads,${avg_elapsed_time},${avg_cpu_time},${avg_max_rss}" >> results/averages_$runtime.csv
         
         echo >> results/$runtime.csv
 
         # Print matrix
         echo "Metrics for $threads $runtime threads:"
-        echo "n,real,user+sys,max_rss"
+        echo "n,real (s),user+sys (s),max_rss (kb)"
         for result in "${matrix[@]}"; do
             echo "$result"
         done
