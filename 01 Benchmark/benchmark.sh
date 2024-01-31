@@ -1,7 +1,7 @@
 #!/bin/bash
 
 threads=(1 8 16 32 64)
-commands=("node Node.js/main.js" "bun run Bun/main.js" "deno run Deno/main.js")
+commands=("node Node.js/main.js" "bun run Bun/main.js" "deno run --allow-read Deno/main.js")
 
 repetitions=10
 
