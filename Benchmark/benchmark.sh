@@ -73,6 +73,5 @@ for cmd in "${commands[@]}"; do
         echo -e "\n"
     done
     threads=1
-    echo >> results/averages.csv
     echo -e "\n"
 done 
